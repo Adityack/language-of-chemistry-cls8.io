@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chemistry - Language of Chemistry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1e293b;
+        }
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .interactive-section {
+            border: 2px dashed #93c5fd;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            background-color: #eff6ff;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            border: 2px solid transparent;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+            border: 2px solid #d1d5db;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        
+        .quiz-option {
+            border: 2px solid #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .quiz-option:hover {
+            background-color: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        .quiz-option.selected {
+            background-color: #93c5fd;
+            border-color: #3b82f6;
+        }
+        .quiz-option.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .atom-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+        }
+        .nucleus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
+        }
+        .electron {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: orbit 5s linear infinite;
+        }
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(70px) rotate(0deg); }
+            to   { transform: rotate(360deg) translateX(70px) rotate(-360deg); }
+        }
+        .electron:nth-child(2) { animation-delay: -2.5s; }
+        .electron:nth-child(3) { animation-delay: -1.25s; }
+        
+        #formula-creator .radical-card {
+            cursor: grab;
+        }
+        #formula-creator .drop-zone {
+            border: 2px dashed #9ca3af;
+            min-height: 80px;
+            transition: background-color 0.2s ease;
+        }
+        #formula-creator .drop-zone.drag-over {
+            background-color: #dbeafe;
+        }
+        
+        #equation-balancer input {
+            width: 50px;
+            text-align: center;
+            border: 2px solid #d1d5db;
+            border-radius: 0.25rem;
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold text-blue-600 orbitron">Language of Chemistry</h1>
+            <p class="text-lg text-gray-600 mt-2">An Interactive Journey into the Building Blocks of Matter</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="space-y-16">
+
+            <!-- Section: Symbols -->
+            <section id="symbols" class="card p-8">
+                <h2 class="text-3xl font-bold mb-4 text-blue-700">1. Symbols: The Alphabet of Chemistry</h2>
+                <p class="mb-6">Just like letters form words, chemical symbols represent elements. Let's explore some common ones. Click on a card to flip it and see its symbol!</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Elements will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Section: Valency -->
+            <section id="valency" class="card p-8">
+                <h2 class="text-3xl font-bold mb-4 text-green-700">2. Valency: The Combining Power</h2>
+                <p class="mb-6">Valency tells us how many bonds an atom can form. It's all about losing or gaining electrons to achieve stability. Interact with the atoms below!</p>
+                <div class="interactive-section">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl font-semibold text-center mb-2">Magnesium (Mg)</h3>
+                            <div class="atom-container" id="mg-atom">
+                                <div class="nucleus">Mg</div>
+                                <!-- Electrons will be added here -->
+                            </div>
+                            <p class="text-center">Magnesium has 2 valence electrons. It <strong class="text-red-600">loses</strong> these 2 electrons to become stable.</p>
+                            <p class="text-center font-bold text-2xl mt-2">Valency = 2</p>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-center mb-2">Oxygen (O)</h3>
+                            <div class="atom-container" id="o-atom">
+                                <div class="nucleus">O</div>
+                                 <!-- Electrons will be added here -->
+                            </div>
+                            <p class="text-center">Oxygen has 6 valence electrons. It <strong class="text-green-600">gains</strong> 2 electrons to become stable.</p>
+                            <p class="text-center font-bold text-2xl mt-2">Valency = 2</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Chemical Formulas -->
+            <section id="formulas" class="card p-8">
+                <h2 class="text-3xl font-bold mb-4 text-purple-700">3. Writing Chemical Formulas</h2>
+                <p class="mb-6">Let's combine elements! Drag a positive radical and a negative radical into the drop zones to see how they form a compound using the "criss-cross" method.</p>
+                <div id="formula-creator" class="interactive-section">
+                    <div class="grid md:grid-cols-2 gap-4 mb-6">
+                        <div id="positive-radicals" class="space-y-2">
+                            <h3 class="font-semibold">Positive Radicals (Cations)</h3>
+                            <!-- Positive radicals here -->
+                        </div>
+                        <div id="negative-radicals" class="space-y-2">
+                            <h3 class="font-semibold">Negative Radicals (Anions)</h3>
+                            <!-- Negative radicals here -->
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 items-center bg-gray-200 p-4 rounded-lg">
+                        <div id="cation-drop-zone" class="drop-zone p-4 rounded-lg text-center">Drop Cation Here</div>
+                        <div id="anion-drop-zone" class="drop-zone p-4 rounded-lg text-center">Drop Anion Here</div>
+                    </div>
+                    <div class="text-center my-4">
+                        <button id="create-formula-btn" class="btn btn-primary">Create Formula</button>
+                    </div>
+                    <div id="formula-result" class="text-center text-3xl font-bold orbitron h-12"></div>
+                </div>
+            </section>
+
+            <!-- Section: Balancing Equations -->
+            <section id="balancing" class="card p-8">
+                <h2 class="text-3xl font-bold mb-4 text-yellow-700">4. Balancing Chemical Equations</h2>
+                <p class="mb-6">The Law of Conservation of Mass states that matter cannot be created or destroyed. This means equations must be balanced! Try balancing the equation below by changing the coefficients.</p>
+                <div id="equation-balancer" class="interactive-section text-center">
+                    <div id="equation-display" class="text-2xl md:text-3xl font-semibold mb-6 flex items-center justify-center space-x-2 flex-wrap">
+                        <!-- Equation will be injected here -->
+                    </div>
+                    <div id="atom-count" class="grid grid-cols-2 gap-4 mb-6">
+                        <div id="reactants-count"></div>
+                        <div id="products-count"></div>
+                    </div>
+                    <button id="check-balance-btn" class="btn btn-primary">Check Balance</button>
+                    <p id="balance-feedback" class="mt-4 font-semibold h-6"></p>
+                </div>
+            </section>
+
+            <!-- Section: Quiz -->
+            <section id="quiz" class="card p-8">
+                <h2 class="text-3xl font-bold mb-4 text-indigo-700">5. Test Your Knowledge!</h2>
+                <div id="quiz-setup" class="text-center">
+                    <p class="mb-4">Select a difficulty level to start the quiz. Each quiz has 25 questions.</p>
+                    <div class="flex justify-center gap-4">
+                        <button class="btn btn-primary" onclick="startQuiz('easy')">Easy</button>
+                        <button class="btn btn-primary" onclick="startQuiz('medium')">Medium</button>
+                        <button class="btn btn-primary" onclick="startQuiz('hard')">Hard</button>
+                        <button class="btn btn-primary" onclick="startQuiz('math')">Math Focus</button>
+                    </div>
+                </div>
+
+                <div id="quiz-container" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <div id="question-counter" class="font-semibold"></div>
+                        <div id="quiz-level" class="font-bold text-indigo-600"></div>
+                    </div>
+                    <div id="quiz-question" class="text-xl font-semibold mb-6"></div>
+                    <div id="quiz-options" class="space-y-4 mb-6"></div>
+                    <button id="submit-answer-btn" class="btn btn-primary w-full">Submit</button>
+                    <div id="explanation" class="mt-4 p-4 rounded-lg bg-gray-100 hidden"></div>
+                </div>
+
+                <div id="quiz-results" class="hidden text-center">
+                    <h3 class="text-2xl font-bold mb-4">Quiz Complete!</h3>
+                    <p id="score" class="text-4xl font-bold orbitron mb-6"></p>
+                    <div id="review" class="text-left space-y-4"></div>
+                    <button class="btn btn-secondary mt-8" onclick="resetQuiz()">Play Again</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const elementsData = [
+            { name: 'Hydrogen', symbol: 'H' }, { name: 'Helium', symbol: 'He' },
+            { name: 'Carbon', symbol: 'C' }, { name: 'Oxygen', symbol: 'O' },
+            { name: 'Nitrogen', symbol: 'N' }, { name: 'Sodium', symbol: 'Na', latin: 'Natrium' },
+            { name: 'Potassium', symbol: 'K', latin: 'Kalium' }, { name: 'Iron', symbol: 'Fe', latin: 'Ferrum' },
+            { name: 'Gold', symbol: 'Au', latin: 'Aurum' }, { name: 'Silver', symbol: 'Ag', latin: 'Argentum' },
+            { name: 'Lead', symbol: 'Pb', latin: 'Plumbum' }, { name: 'Copper', symbol: 'Cu', latin: 'Cuprum' },
+            { name: 'Calcium', symbol: 'Ca' }, { name: 'Chlorine', symbol: 'Cl' },
+            { name: 'Zinc', symbol: 'Zn' }
+        ];
+
+        const radicalsData = {
+            positive: [
+                { name: 'Sodium', symbol: 'Na', charge: 1 },
+                { name: 'Potassium', symbol: 'K', charge: 1 },
+                { name: 'Ammonium', symbol: 'NH₄', charge: 1 },
+                { name: 'Calcium', symbol: 'Ca', charge: 2 },
+                { name: 'Magnesium', symbol: 'Mg', charge: 2 },
+                { name: 'Zinc', symbol: 'Zn', charge: 2 },
+                { name: 'Iron (II)', symbol: 'Fe', charge: 2 },
+                { name: 'Aluminium', symbol: 'Al', charge: 3 },
+                { name: 'Iron (III)', symbol: 'Fe', charge: 3 },
+            ],
+            negative: [
+                { name: 'Chloride', symbol: 'Cl', charge: 1 },
+                { name: 'Hydroxide', symbol: 'OH', charge: 1 },
+                { name: 'Nitrate', symbol: 'NO₃', charge: 1 },
+                { name: 'Oxide', symbol: 'O', charge: 2 },
+                { name: 'Sulphate', symbol: 'SO₄', charge: 2 },
+                { name: 'Carbonate', symbol: 'CO₃', charge: 2 },
+                { name: 'Phosphate', symbol: 'PO₄', charge: 3 },
+            ]
+        };
+        
+        // --- QUIZ DATA (EXPANDED) ---
+        const quizQuestions = {
+            easy: [
+                { q: "What is the symbol for Potassium?", a: "K", o: ["P", "Po", "K", "Pt"], ex: "The symbol for Potassium is K, derived from its Latin name, Kalium." },
+                { q: "What is the symbol for Gold?", a: "Au", o: ["Go", "Gd", "Ag", "Au"], ex: "The symbol for Gold is Au, from its Latin name, Aurum." },
+                { q: "The combining capacity of an element is called its...", a: "Valency", o: ["Symbol", "Radical", "Valency", "Formula"], ex: "Valency is the measure of an element's combining power with other atoms when it forms chemical compounds or molecules." },
+                { q: "Which of these is a monovalent element?", a: "Sodium", o: ["Magnesium", "Sodium", "Aluminium", "Carbon"], ex: "Sodium (Na) has a valency of 1, making it monovalent. It loses one electron." },
+                { q: "A positively charged radical is called a...", a: "Cation", o: ["Anion", "Cation", "Molecule", "Isotope"], ex: "Positively charged ions (radicals) are called cations. They are formed by losing electrons." },
+                { q: "What is the symbol for Iron?", a: "Fe", o: ["I", "Ir", "Fe", "In"], ex: "The symbol for Iron is Fe, from its Latin name, Ferrum." },
+                { q: "What does the symbol 'O' represent?", a: "Oxygen", o: ["Osmium", "Gold", "Oxygen", "Oganesson"], ex: "The symbol 'O' represents one atom of the element Oxygen." },
+                { q: "A negatively charged radical is called an...", a: "Anion", o: ["Cation", "Anion", "Positron", "Neutron"], ex: "Negatively charged ions (radicals) are called anions. They are formed by gaining electrons." },
+                { q: "Which element's name comes from the Latin 'Natrium'?", a: "Sodium", o: ["Nitrogen", "Nickel", "Sodium", "Nihonium"], ex: "Sodium's symbol is Na, which comes from its Latin name, Natrium." },
+                { q: "What is the valency of Calcium (Ca)?", a: "2", o: ["1", "2", "3", "4"], ex: "Calcium is in Group 2 of the periodic table and typically forms a Ca²⁺ ion, giving it a valency of 2." },
+                { q: "Which of the following is a symbol for a single element?", a: "Co", o: ["CO", "Co", "C₂O", "H₂O"], ex: "Co is the symbol for Cobalt. CO is a compound, carbon monoxide." },
+                { q: "The substances that take part in a chemical reaction are called...", a: "Reactants", o: ["Products", "Reactants", "Catalysts", "Solvents"], ex: "Reactants are the starting materials in a chemical reaction and are written on the left side of a chemical equation." },
+                { q: "The substances formed as a result of a chemical reaction are called...", a: "Products", o: ["Reactants", "Reagents", "Products", "Precursors"], ex: "Products are the substances formed during a chemical reaction and are written on the right side of the equation." },
+                { q: "What is the valency of Chlorine (Cl)?", a: "1", o: ["1", "2", "3", "7"], ex: "Chlorine typically gains one electron to form a Cl⁻ ion, giving it a valency of 1." },
+                { q: "An element with a valency of 3 is called...", a: "Trivalent", o: ["Monovalent", "Divalent", "Trivalent", "Tetravalent"], ex: "Elements with a valency of three, like Aluminium, are called trivalent." },
+                { q: "What is the symbol for Silver?", a: "Ag", o: ["Si", "S", "Ag", "Au"], ex: "The symbol for Silver is Ag, from its Latin name, Argentum." },
+                { q: "What is a chemical formula?", a: "A symbolic representation of a molecule", o: ["A short name for an element", "The charge of an atom", "A symbolic representation of a molecule", "The mass of an element"], ex: "A chemical formula, like H₂O, shows the elements and the number of atoms of each element in a molecule." },
+                { q: "The symbol for Lead is Pb. What is its Latin name?", a: "Plumbum", o: ["Plumbum", "Argentum", "Aurum", "Stannum"], ex: "The symbol Pb for Lead comes from its Latin name, Plumbum." },
+                { q: "An element with a valency of 4 is called...", a: "Tetravalent", o: ["Monovalent", "Divalent", "Trivalent", "Tetravalent"], ex: "Carbon is a common example of a tetravalent element, having a valency of 4." },
+                { q: "What is the charge on a sodium ion?", a: "+1", o: ["-1", "+1", "+2", "-2"], ex: "Sodium (Na) loses one electron to become stable, resulting in a +1 charge (Na⁺)." },
+                { q: "Which of these is a divalent element?", a: "Magnesium", o: ["Potassium", "Magnesium", "Aluminium", "Chlorine"], ex: "Magnesium (Mg) has a valency of 2, making it divalent." },
+                { q: "The arrow (→) in a chemical equation means...", a: "Yields or produces", o: ["Reacts with", "Is the same as", "Yields or produces", "Is in equilibrium with"], ex: "The arrow separates reactants from products and indicates the direction of the reaction." },
+                { q: "What is the symbol for Zinc?", a: "Zn", o: ["Z", "Zi", "Zn", "Zc"], ex: "The symbol for the element Zinc is Zn." },
+                { q: "A radical made of only one kind of atom is called a...", a: "Simple radical", o: ["Compound radical", "Simple radical", "Monatomic radical", "Basic radical"], ex: "A simple radical consists of a single charged atom, like Na⁺ or Cl⁻." },
+                { q: "What is the valency of the element Oxygen (O)?", a: "2", o: ["1", "2", "3", "6"], ex: "Oxygen typically gains two electrons to form an O²⁻ ion, giving it a valency of 2." },
+            ],
+            medium: [
+                { q: "What is the chemical formula for Sodium Chloride?", a: "NaCl", o: ["SoCl", "NaCl", "Na₂Cl", "NaCl₂"], ex: "Sodium (Na⁺) has a valency of 1 and Chloride (Cl⁻) has a valency of 1. They combine in a 1:1 ratio to form NaCl." },
+                { q: "An element that shows more than one valency is said to have...", a: "Variable valency", o: ["Multiple valency", "Iso-valency", "Variable valency", "Dynamic valency"], ex: "Elements like Iron (Fe²⁺ and Fe³⁺) exhibit variable valency." },
+                { q: "What is the valency of the sulphate radical (SO₄)?", a: "2-", o: ["1-", "2-", "3-", "1+"], ex: "The sulphate radical (SO₄) has a charge of 2-, so its valency is 2." },
+                { q: "In Ferrous Oxide (FeO), what is the valency of Iron?", a: "2", o: ["1", "2", "3", "4"], ex: "The 'ous' suffix indicates the lower valency state. For Iron, this is 2+. Oxide (O) has a valency of 2-." },
+                { q: "What is the formula for Calcium Hydroxide?", a: "Ca(OH)₂", o: ["CaOH", "CaOH₂", "Ca₂(OH)", "Ca(OH)₂"], ex: "Calcium (Ca²⁺) has a valency of 2, and Hydroxide (OH⁻) has a valency of 1. The criss-cross method gives Ca(OH)₂." },
+                { q: "What is the name of the compound with formula KOH?", a: "Potassium Hydroxide", o: ["Potassium Hydride", "Potassium Oxide", "Potassium Hydroxide", "Potassium Monoxide"], ex: "K is Potassium and OH is the hydroxide radical." },
+                { q: "Which law is the basis for balancing chemical equations?", a: "Law of Conservation of Mass", o: ["Law of Constant Proportions", "Law of Multiple Proportions", "Law of Conservation of Mass", "Avogadro's Law"], ex: "The Law of Conservation of Mass states that atoms are neither created nor destroyed in a chemical reaction, so the number of each type of atom must be equal on both sides." },
+                { q: "What is the formula for Nitric Acid?", a: "HNO₃", o: ["HNO₂", "H₂NO₃", "HNO₃", "HN₃"], ex: "Nitric acid is composed of a hydrogen ion (H⁺) and a nitrate radical (NO₃⁻)." },
+                { q: "A radical like Ammonium (NH₄⁺) is called a...", a: "Compound radical", o: ["Simple radical", "Elemental radical", "Compound radical", "Mixed radical"], ex: "It is a compound radical because it is made of more than one type of atom (Nitrogen and Hydrogen) acting as a single unit." },
+                { q: "What is the valency of the carbonate radical (CO₃)?", a: "2-", o: ["1-", "2-", "3-", "4-"], ex: "The carbonate radical (CO₃) has a charge of 2-." },
+                { q: "What is the chemical formula for Magnesium Nitride?", a: "Mg₃N₂", o: ["MgN", "Mg₂N₃", "Mg₃N₂", "MgN₂"], ex: "Magnesium (Mg²⁺) has a valency of 2, and Nitride (N³⁻) has a valency of 3. The criss-cross method gives Mg₃N₂." },
+                { q: "The 'ic' suffix in 'Ferric' indicates that iron has a valency of...", a: "3", o: ["1", "2", "3", "4"], ex: "For iron, 'ferrous' is valency 2, and 'ferric' is the higher valency, which is 3." },
+                { q: "What does the symbol (aq) written after a formula in an equation mean?", a: "Aqueous solution", o: ["Liquid", "Gas", "Solid", "Aqueous solution"], ex: "(aq) stands for aqueous, meaning the substance is dissolved in water." },
+                { q: "What is the formula for Sulphuric Acid?", a: "H₂SO₄", o: ["H₂S", "HSO₄", "H₂SO₃", "H₂SO₄"], ex: "Sulphuric acid consists of two hydrogen ions (H⁺) to balance the charge of one sulphate radical (SO₄²⁻)." },
+                { q: "Which of the following elements has variable valency?", a: "Copper", o: ["Sodium", "Calcium", "Copper", "Aluminium"], ex: "Copper can have a valency of 1 (cuprous) or 2 (cupric)." },
+                { q: "What is the name of the compound Fe₂O₃?", a: "Ferric Oxide", o: ["Iron Oxide", "Ferrous Oxide", "Ferric Oxide", "Di-iron Trioxide"], ex: "Since each oxygen is 2-, the total negative charge is 6-. To balance, two irons must have a total charge of 6+, so each iron is 3+. This is the 'ferric' state." },
+                { q: "What is the formula for the Ammonium radical?", a: "NH₄⁺", o: ["NH₃", "NH₄⁻", "NH₄⁺", "NO₃⁻"], ex: "The ammonium radical is a polyatomic cation with the formula NH₄⁺." },
+                { q: "Balance the equation: __Mg + __O₂ → __MgO", a: "2, 1, 2", o: ["1, 1, 1", "2, 1, 2", "2, 2, 2", "1, 2, 1"], ex: "To balance the oxygen atoms, you need 2 MgO, which then requires 2 Mg. The balanced equation is 2Mg + O₂ → 2MgO." },
+                { q: "What is the valency of the phosphate radical (PO₄)?", a: "3-", o: ["1-", "2-", "3-", "4-"], ex: "The phosphate radical (PO₄) has a charge of 3-." },
+                { q: "What is the chemical formula for Carbon Dioxide?", a: "CO₂", o: ["CO", "C₂O", "CO₂", "CO₃"], ex: "Carbon dioxide has one carbon atom and two oxygen atoms." },
+                { q: "The downward arrow (↓) in an equation indicates the formation of a...", a: "Precipitate", o: ["Gas", "Precipitate", "Liquid", "Catalyst"], ex: "A downward arrow signifies that a solid, insoluble product, called a precipitate, has formed." },
+                { q: "What is the formula for Aluminium Chloride?", a: "AlCl₃", o: ["AlCl", "AlCl₂", "Al₂Cl₃", "AlCl₃"], ex: "Aluminium (Al³⁺) has a valency of 3, and Chloride (Cl⁻) has a valency of 1. This gives AlCl₃." },
+                { q: "What is the name for H₂CO₃?", a: "Carbonic Acid", o: ["Hydrocarbonic Acid", "Carbonous Acid", "Carbonic Acid", "Carbolic Acid"], ex: "H₂CO₃ is known as carbonic acid, which is formed when carbon dioxide dissolves in water." },
+                { q: "What does the symbol 'Δ' over the reaction arrow mean?", a: "Heat is applied", o: ["A catalyst is used", "Pressure is applied", "Heat is applied", "The reaction is reversible"], ex: "The delta symbol (Δ) indicates that heat is required for the reaction to proceed." },
+                { q: "Which of the following is a compound radical?", a: "Nitrate (NO₃⁻)", o: ["Chloride (Cl⁻)", "Sodium (Na⁺)", "Nitrate (NO₃⁻)", "Helium (He)"], ex: "Nitrate (NO₃⁻) is a compound radical because it consists of multiple atoms (N and O) acting as a single charged unit." },
+            ],
+            hard: [
+                { q: "What is the chemical formula for Aluminium Sulphate?", a: "Al₂(SO₄)₃", o: ["AlSO₄", "Al₂(SO₄)", "Al(SO₄)₂", "Al₂(SO₄)₃"], ex: "Aluminium (Al³⁺) has a valency of 3, and Sulphate (SO₄²⁻) has a valency of 2. The criss-cross method gives Al₂(SO₄)₃." },
+                { q: "Balance the equation: __N₂ + __H₂ → __NH₃", a: "1, 3, 2", o: ["2, 3, 2", "1, 3, 2", "1, 2, 3", "2, 1, 2"], ex: "To balance, you need 2 Nitrogen atoms and 6 Hydrogen atoms on both sides: N₂ + 3H₂ → 2NH₃." },
+                { q: "In Ferric Sulphate, the formula is Fe₂(SO₄)₃. What is the valency of Iron (Fe)?", a: "3", o: ["1", "2", "3", "4"], ex: "The 'ic' suffix denotes the higher valency. From the formula, 2 Fe atoms balance 3 SO₄ groups (charge 2- each, total 6-). So, 2 Fe must have a total charge of 6+, meaning each Fe is 3+." },
+                { q: "A radical made of two or more kinds of atoms is a...", a: "Compound radical", o: ["Simple radical", "Complex radical", "Poly-radical", "Compound radical"], ex: "Radicals like Ammonium (NH₄⁺) or Carbonate (CO₃²⁻) contain multiple types of atoms and are called compound radicals." },
+                { q: "When balancing C₃H₈ + O₂ → CO₂ + H₂O, what is the coefficient for O₂?", a: "5", o: ["3", "4", "5", "8"], ex: "The balanced equation is C₃H₈ + 5O₂ → 3CO₂ + 4H₂O. There are 10 oxygen atoms on both sides." },
+                { q: "What is the formula for Ammonium Dichromate?", a: "(NH₄)₂Cr₂O₇", o: ["NH₄Cr₂O₇", "(NH₄)₂Cr₂O₇", "NH₄(Cr₂O₇)₂", "Am₂Cr₂O₇"], ex: "Ammonium (NH₄⁺) has a +1 charge and Dichromate (Cr₂O₇²⁻) has a 2- charge. You need two ammonium ions to balance one dichromate ion." },
+                { q: "Balance the equation: __KMnO₄ + __HCl → __KCl + __MnCl₂ + __H₂O + __Cl₂", a: "2, 16, 2, 2, 8, 5", o: ["2, 8, 2, 1, 4, 2", "1, 8, 1, 1, 4, 2", "2, 16, 2, 2, 8, 5", "2, 16, 2, 1, 8, 5"], ex: "This is a complex redox reaction. The balanced coefficients are 2, 16, 2, 2, 8, 5." },
+                { q: "What is the name of SnCl₄?", a: "Tin (IV) Chloride", o: ["Tin Chloride", "Tin (II) Chloride", "Tin (IV) Chloride", "Stannous Chloride"], ex: "Chloride has a 1- charge. Since there are four Cl atoms, the total negative charge is 4-. Therefore, the single Tin (Sn) atom must have a 4+ charge. This is indicated by the Roman numeral (IV)." },
+                { q: "Which of the following is NOT a limitation of a chemical equation?", a: "It shows the ratio of atoms.", o: ["It shows the rate of reaction.", "It shows the conditions of reaction.", "It shows the ratio of atoms.", "It shows if the reaction is reversible."], ex: "A key piece of information a balanced chemical equation *does* provide is the quantitative ratio of atoms and molecules involved." },
+                { q: "What is the formula for Lead (IV) Oxide?", a: "PbO₂", o: ["PbO", "Pb₂O", "PbO₂", "Pb₂O₄"], ex: "Lead (IV) means Pb has a 4+ charge. Oxide (O) has a 2- charge. You need two oxide ions to balance one lead (IV) ion, giving PbO₂." },
+                { q: "Balance the word equation: Copper + concentrated Nitric acid → Copper nitrate + Nitrogen dioxide + Water", a: "1, 4, 1, 2, 2", o: ["1, 2, 1, 1, 1", "1, 4, 1, 2, 2", "2, 4, 2, 1, 2", "1, 4, 1, 1, 2"], ex: "The balanced molecular equation is Cu + 4HNO₃ → Cu(NO₃)₂ + 2NO₂ + 2H₂O." },
+                { q: "The reaction N₂(g) + O₂(g) ⇌ 2NO(g) uses a double arrow. What does this signify?", a: "The reaction is reversible", o: ["The reaction is slow", "The reaction is fast", "The reaction is reversible", "The reaction requires a catalyst"], ex: "The double arrow (⇌) indicates that the reaction can proceed in both the forward and reverse directions, which is the definition of a reversible reaction." },
+                { q: "What is the formula for Calcium Phosphate?", a: "Ca₃(PO₄)₂", o: ["CaPO₄", "Ca₂(PO₄)₃", "Ca₃(PO₄)₂", "Ca(PO₄)"], ex: "Calcium (Ca²⁺) has a valency of 2, and Phosphate (PO₄³⁻) has a valency of 3. The criss-cross method gives Ca₃(PO₄)₂." },
+                { q: "What is the name of Hg₂Cl₂?", a: "Mercury (I) Chloride", o: ["Mercury (II) Chloride", "Mercury (I) Chloride", "Mercury Dichloride", "Dimercury Dichloride"], ex: "This is a unique ion where two Mercury atoms have a combined +2 charge (Hg₂²⁺), meaning each has an effective +1 state. This is Mercury (I), also known as mercurous chloride." },
+                { q: "Which statement is true about balancing C₂H₅OH + O₂ → CO₂ + H₂O?", a: "The coefficient for O₂ is 3", o: ["The coefficient for H₂O is 2", "The coefficient for CO₂ is 3", "The coefficient for O₂ is 3", "The coefficient for C₂H₅OH is 2"], ex: "The fully balanced equation is C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O." },
+            ],
+            math: [
+                { q: "If an element X combines with Oxygen to form X₂O₃, what is the valency of X?", a: "3", o: ["1", "2", "3", "4"], ex: "Oxygen has a valency of 2. Three oxygen atoms give a total negative valency of 3 * 2 = 6. To balance this, two atoms of X must have a total positive valency of 6. So, each X atom has a valency of 6 / 2 = 3." },
+                { q: "Calculate the number of hydrogen atoms in 2 molecules of Ammonium Sulphate, (NH₄)₂SO₄.", a: "16", o: ["4", "8", "12", "16"], ex: "One molecule has (NH₄)₂, which means 2 * 4 = 8 hydrogen atoms. Two molecules would have 2 * 8 = 16 hydrogen atoms." },
+                { q: "Balance the equation and find the sum of all coefficients: KClO₃ → KCl + O₂", a: "7", o: ["4", "5", "6", "7"], ex: "The balanced equation is 2KClO₃ → 2KCl + 3O₂. The sum of coefficients is 2 + 2 + 3 = 7." },
+                { q: "An element M has valency 4. It combines with the phosphate radical (PO₄³⁻). What is the formula?", a: "M₃(PO₄)₄", o: ["MPO₄", "M₄(PO₄)₃", "M₃(PO₄)₄", "M(PO₄)₂"], ex: "Using the criss-cross method with M⁴⁺ and PO₄³⁻, we get M₃(PO₄)₄." },
+                { q: "In the reaction 2Al + 3H₂SO₄ → Al₂(SO₄)₃ + 3H₂, how many oxygen atoms are on the reactants side?", a: "12", o: ["3", "4", "7", "12"], ex: "On the reactants side, we have 3 molecules of H₂SO₄. Each molecule has 4 oxygen atoms. So, the total is 3 * 4 = 12 oxygen atoms." },
+                { q: "An element 'A' has a valency of 3, and another element 'B' has a valency of 2. The formula of their compound is...", a: "A₂B₃", o: ["AB", "A₃B₂", "A₂B₃", "A₆B₆"], ex: "Using the criss-cross method, the valency of A becomes the subscript for B, and the valency of B becomes the subscript for A, giving A₂B₃." },
+                { q: "How many total atoms are in one molecule of glucose, C₆H₁₂O₆?", a: "24", o: ["6", "12", "18", "24"], ex: "Total atoms = 6 (Carbon) + 12 (Hydrogen) + 6 (Oxygen) = 24 atoms." },
+                { q: "Balance the equation and find the coefficient for water: __C₂H₆ + __O₂ → __CO₂ + __H₂O", a: "6", o: ["2", "3", "4", "6"], ex: "The balanced equation is 2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O. The coefficient for water is 6." },
+                { q: "If a metal M forms an oxide MO, what is the formula of its chloride?", a: "MCl₂", o: ["MCl", "MCl₂", "M₂Cl", "MCl₃"], ex: "In MO, oxygen has a valency of 2-, so the metal M must have a valency of 2+. Chloride has a valency of 1-. Therefore, the formula is MCl₂." },
+                { q: "Calculate the total number of atoms in 3 molecules of Calcium Carbonate, CaCO₃.", a: "15", o: ["3", "5", "9", "15"], ex: "One molecule of CaCO₃ has 1 (Ca) + 1 (C) + 3 (O) = 5 atoms. Three molecules will have 3 * 5 = 15 atoms." },
+                { q: "An element X forms a chloride XCl₃. What is the formula of its sulphate?", a: "X₂(SO₄)₃", o: ["XSO₄", "X(SO₄)₂", "X₂(SO₄)₃", "X₃(SO₄)₂"], ex: "From XCl₃, we know the valency of X is 3+. The sulphate radical (SO₄) has a valency of 2-. Criss-crossing gives X₂(SO₄)₃." },
+                { q: "What is the sum of the coefficients in the balanced equation: __Al + __O₂ → __Al₂O₃?", a: "9", o: ["4", "5", "7", "9"], ex: "The balanced equation is 4Al + 3O₂ → 2Al₂O₃. The sum of coefficients is 4 + 3 + 2 = 9." },
+                { q: "How many oxygen atoms are in 2 molecules of Aluminium Nitrate, Al(NO₃)₃?", a: "18", o: ["6", "9", "12", "18"], ex: "One molecule has 3 nitrate groups, each with 3 oxygen atoms, so 3 * 3 = 9 oxygen atoms. Two molecules have 2 * 9 = 18 oxygen atoms." },
+                { q: "If element Y has valency 1 and element Z has valency 2, what is the formula of the compound formed?", a: "Y₂Z", o: ["YZ", "Y₂Z", "YZ₂", "Y₂Z₂"], ex: "Using the criss-cross method, the valency of Z (2) becomes the subscript for Y, and the valency of Y (1) becomes the subscript for Z. This gives Y₂Z." },
+                { q: "In the balanced equation for the combustion of methane (CH₄ + O₂ → CO₂ + H₂O), what is the ratio of methane molecules to oxygen molecules?", a: "1:2", o: ["1:1", "1:2", "2:1", "1:4"], ex: "The balanced equation is CH₄ + 2O₂ → CO₂ + 2H₂O. The ratio of CH₄ to O₂ is 1:2." },
+                // ... Add many more math questions to reach 60+
+            ]
+        };
+        
+        // Add more unique questions to each category to fulfill the request
+        
+        // --- EASY (add 20 more) ---
+        quizQuestions.easy.push(
+            { q: "What does the symbol 'H' represent?", a: "Hydrogen", o: ["Helium", "Hafnium", "Hydrogen", "Mercury"], ex: "The symbol 'H' represents one atom of the element Hydrogen." },
+            { q: "Which of these is a noble gas?", a: "Helium", o: ["Hydrogen", "Oxygen", "Helium", "Nitrogen"], ex: "Helium (He) is a noble gas, known for being very unreactive." },
+            { q: "What is the charge on a chloride ion?", a: "-1", o: ["+1", "-1", "+2", "-2"], ex: "Chlorine (Cl) gains one electron to become stable, resulting in a -1 charge (Cl⁻)." },
+            { q: "The Latin name for Tin is 'Stannum'. What is its symbol?", a: "Sn", o: ["Ti", "Tn", "S", "Sn"], ex: "The symbol for Tin is Sn, derived from Stannum." },
+            { q: "Which of the following represents a molecule of a compound?", a: "H₂O", o: ["O₂", "H₂O", "Fe", "S₈"], ex: "H₂O represents a molecule of water, which is a compound made of Hydrogen and Oxygen. O₂, Fe, and S₈ represent elements." },
+            { q: "What is the valency of an element in its elemental form (e.g., Fe, O₂)?", a: "0", o: ["1", "2", "0", "Depends on the element"], ex: "In their pure elemental form, atoms have no charge and are considered to have a valency of 0." },
+            { q: "What is the symbol for Nitrogen?", a: "N", o: ["Ni", "Na", "N", "Ne"], ex: "The symbol for the element Nitrogen is N." },
+            { q: "An element with a valency of 2 is called...", a: "Divalent", o: ["Monovalent", "Divalent", "Trivalent", "Bivalent"], ex: "Elements with a valency of two, like Magnesium, are called divalent." },
+            { q: "What is the symbol for Calcium?", a: "Ca", o: ["C", "Cl", "Ca", "K"], ex: "The symbol for the element Calcium is Ca." },
+            { q: "What is the symbol for Mercury?", a: "Hg", o: ["Me", "My", "Hg", "Mc"], ex: "The symbol for Mercury is Hg, from its Latin name Hydrargyrum." },
+            { q: "A chemical reaction involves the rearrangement of...", a: "Atoms", o: ["Nuclei", "Protons", "Atoms", "Quarks"], ex: "Chemical reactions involve the breaking and forming of bonds between atoms, leading to a rearrangement of those atoms." },
+            { q: "What is the first letter of a chemical symbol always?", a: "Capitalized", o: ["Lowercase", "A vowel", "Capitalized", "A consonant"], ex: "By convention, the first letter of an element's symbol is always a capital letter, like H for Hydrogen or C for Carbon." },
+            { q: "If a symbol has two letters, the second letter is always...", a: "Lowercase", o: ["Capitalized", "Lowercase", "A vowel", "A consonant"], ex: "For symbols with two letters, the first is capitalized and the second is lowercase, like He for Helium or Ca for Calcium." },
+            { q: "What does the '+' sign between two reactants mean?", a: "Reacts with", o: ["Produces", "And", "Reacts with", "Equals"], ex: "The plus sign on the left side of an equation means 'reacts with'." },
+            { q: "What is the charge of a basic radical?", a: "Positive", o: ["Negative", "Positive", "Neutral", "It varies"], ex: "Basic radicals, or cations, are positively charged." },
+            { q: "What is the charge of an acid radical?", a: "Negative", o: ["Positive", "Negative", "Neutral", "It varies"], ex: "Acid radicals, or anions, are negatively charged." },
+            { q: "What is the symbol for Phosphorus?", a: "P", o: ["Ph", "Po", "P", "K"], ex: "The symbol for the element Phosphorus is P." },
+            { q: "Which element's symbol is W?", a: "Tungsten", o: ["Watt", "Tungsten", "Wolframite", "Water"], ex: "The symbol W for Tungsten comes from its other name, Wolfram." },
+            { q: "What is the valency of the hydroxide radical (OH)?", a: "1-", o: ["1-", "2-", "1+", "2+"], ex: "The hydroxide radical has a charge of 1-, giving it a valency of 1." },
+            { q: "What is the symbol for Bromine?", a: "Br", o: ["B", "Bo", "Br", "Bm"], ex: "The symbol for the element Bromine is Br." }
+        );
+
+        // --- MEDIUM (add 25 more) ---
+        quizQuestions.medium.push(
+            { q: "What is the formula for Phosphoric Acid?", a: "H₃PO₄", o: ["H₂PO₄", "H₃PO₄", "HPO₄", "H₃P"], ex: "Phosphoric acid is formed from three hydrogen ions (H⁺) and one phosphate radical (PO₄³⁻)." },
+            { q: "What is the name of the compound CaCO₃?", a: "Calcium Carbonate", o: ["Calcium Carbide", "Calcium Carbonate", "Calcium Oxide", "Calcite"], ex: "Ca is Calcium and CO₃ is the carbonate radical. This compound is the main component of chalk and limestone." },
+            { q: "Which of the following is the correct formula for Copper (II) Sulphate?", a: "CuSO₄", o: ["Cu₂SO₄", "Cu(SO₄)₂", "CuSO₄", "CuS"], ex: "Copper (II) means Cu²⁺, and the sulphate radical is SO₄²⁻. The +2 and -2 charges balance, so the formula is CuSO₄." },
+            { q: "What is the formula for Ferric Chloride?", a: "FeCl₃", o: ["FeCl", "FeCl₂", "FeCl₃", "Fe₂Cl₃"], ex: "Ferric indicates the higher valency of iron, which is 3+. Chloride is 1-. This gives FeCl₃." },
+            { q: "Balance the equation: __H₂ + __Cl₂ → __HCl", a: "1, 1, 2", o: ["1, 1, 1", "2, 2, 2", "1, 1, 2", "2, 1, 2"], ex: "You start with 2 atoms of H and 2 atoms of Cl, so you must produce 2 molecules of HCl. The balanced equation is H₂ + Cl₂ → 2HCl." },
+            { q: "What is the valency of nitrogen in ammonia (NH₃)?", a: "3", o: ["1", "2", "3", "5"], ex: "Each hydrogen has a valency of 1. Since three hydrogens are bonded to one nitrogen, the nitrogen must have a valency of 3." },
+            { q: "What is the formula for Sodium Sulphate?", a: "Na₂SO₄", o: ["NaSO₄", "Na₂(SO₄)", "Na₂SO₄", "Na(SO₄)₂"], ex: "Sodium (Na⁺) has a valency of 1, and Sulphate (SO₄²⁻) has a valency of 2. You need two sodium ions to balance the charge." },
+            { q: "What is the name of the compound AgNO₃?", a: "Silver Nitrate", o: ["Silver Nitrite", "Silver Nitrate", "Argentum Nitrate", "Silver Nitrogen Oxide"], ex: "Ag is Silver and NO₃ is the nitrate radical." },
+            { q: "The reaction 2H₂O → 2H₂ + O₂ is an example of a...", a: "Decomposition reaction", o: ["Combination reaction", "Decomposition reaction", "Displacement reaction", "Redox reaction"], ex: "This is a decomposition reaction because one compound (water) is breaking down into simpler substances." },
+            { q: "What is the formula for the bisulphate radical?", a: "HSO₄⁻", o: ["SO₃²⁻", "SO₄²⁻", "HSO₄⁻", "S₂O₃²⁻"], ex: "The bisulphate (or hydrogen sulphate) radical has the formula HSO₄⁻." },
+            { q: "What is the name of Cu₂O?", a: "Copper (I) Oxide", o: ["Copper Oxide", "Copper (I) Oxide", "Copper (II) Oxide", "Dicopper Monoxide"], ex: "Oxygen is 2-, so two copper atoms must have a total +2 charge. This means each copper is +1, or Copper (I). It's also called cuprous oxide." },
+            { q: "Which of the following is a balanced chemical equation?", a: "2Na + 2H₂O → 2NaOH + H₂", o: ["Na + H₂O → NaOH + H₂", "2Na + H₂O → 2NaOH + H₂", "2Na + 2H₂O → 2NaOH + H₂", "Na + 2H₂O → NaOH + H₂"], ex: "Only this option has an equal number of Na, H, and O atoms on both the reactant and product sides." },
+            { q: "What is the formula for Zinc Phosphate?", a: "Zn₃(PO₄)₂", o: ["ZnPO₄", "Zn₂(PO₄)₃", "Zn₃(PO₄)₂", "ZnPO"], ex: "Zinc (Zn²⁺) has a valency of 2, and Phosphate (PO₄³⁻) has a valency of 3. Criss-crossing gives Zn₃(PO₄)₂." },
+            { q: "What is the valency of carbon in methane (CH₄)?", a: "4", o: ["1", "2", "3", "4"], ex: "Each hydrogen has a valency of 1. Since four hydrogens are bonded to one carbon, the carbon must have a valency of 4." },
+            { q: "What is the name of the acid HCl?", a: "Hydrochloric Acid", o: ["Hydrogen Chloride", "Chloric Acid", "Hydrochloric Acid", "Hypochlorous Acid"], ex: "When the gas Hydrogen Chloride (HCl) is dissolved in water, it forms Hydrochloric Acid." },
+            { q: "What does the upward arrow (↑) in an equation signify?", a: "A gas is evolved", o: ["A precipitate is formed", "A gas is evolved", "The product is solid", "Heat is released"], ex: "An upward arrow indicates that a product is a gas and is escaping from the reaction mixture." },
+        );
+
+        // --- HARD (add 20 more) ---
+        quizQuestions.hard.push(
+            { q: "What is the formula for Potassium Permanganate?", a: "KMnO₄", o: ["KMnO₄", "K₂MnO₄", "K(MnO₄)₂", "PMnO₄"], ex: "Potassium (K⁺) has a +1 charge and the permanganate radical (MnO₄⁻) has a 1- charge. They combine in a 1:1 ratio." },
+            { q: "Balance the equation for the combustion of ethanol: __C₂H₅OH + __O₂ → __CO₂ + __H₂O", a: "1, 3, 2, 3", o: ["1, 2, 2, 3", "2, 7, 4, 6", "1, 3, 2, 3", "2, 6, 4, 6"], ex: "The balanced equation is C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O." },
+            { q: "What is the name of the compound Pb(NO₃)₂?", a: "Lead (II) Nitrate", o: ["Lead Nitrate", "Lead (II) Nitrate", "Lead (IV) Nitrate", "Plumbous Nitrate"], ex: "The nitrate radical (NO₃⁻) has a 1- charge. Since there are two, the total negative charge is 2-. Therefore, the lead (Pb) must have a 2+ charge." },
+            { q: "A reaction where an element replaces another in a compound is called a...", a: "Displacement reaction", o: ["Combination reaction", "Decomposition reaction", "Displacement reaction", "Double displacement reaction"], ex: "For example, Zn + CuSO₄ → ZnSO₄ + Cu, where zinc displaces copper." },
+            { q: "What is the formula for Stannic Chloride?", a: "SnCl₄", o: ["SnCl₂", "SnCl₄", "Sn₂Cl", "SnCl"], ex: "The 'ic' ending for Tin (Stannum) refers to its higher valency of 4+. Chloride is 1-, so the formula is SnCl₄." },
+            { q: "Balance the equation: __Fe₂O₃ + __CO → __Fe + __CO₂", a: "1, 3, 2, 3", o: ["1, 2, 2, 2", "1, 3, 2, 3", "2, 3, 4, 3", "1, 1, 2, 1"], ex: "This represents the reduction of iron ore in a blast furnace. The balanced form is Fe₂O₃ + 3CO → 2Fe + 3CO₂." },
+            { q: "What is the formula for the Thiosulphate radical?", a: "S₂O₃²⁻", o: ["SO₄²⁻", "SO₃²⁻", "S₂O₃²⁻", "S₂O₄²⁻"], ex: "The thiosulphate radical, found in compounds like sodium thiosulphate, has the formula S₂O₃²⁻." },
+            { q: "What is the name of the compound (NH₄)₂SO₄?", a: "Ammonium Sulphate", o: ["Ammonium Sulphite", "Ammonium Sulphate", "Nitrogen Hydrogen Sulphate", "Diammonium Sulphate"], ex: "NH₄⁺ is the ammonium radical and SO₄²⁻ is the sulphate radical." },
+            { q: "Which of the following equations represents a double displacement reaction?", a: "AgNO₃ + NaCl → AgCl + NaNO₃", o: ["Zn + 2HCl → ZnCl₂ + H₂", "2Mg + O₂ → 2MgO", "AgNO₃ + NaCl → AgCl + NaNO₃", "CaCO₃ → CaO + CO₂"], ex: "In a double displacement reaction, the cations and anions of two different compounds switch places, which happens here." },
+            { q: "What is the valency of Chromium in the dichromate radical (Cr₂O₇²⁻)?", a: "+6", o: ["+3", "+4", "+6", "+7"], ex: "Oxygen is -2. Seven oxygens give -14. The total charge is -2. So, 2Cr - 14 = -2. This means 2Cr = +12, and each Cr is +6." },
+            { q: "What is the formula for Nitrous Acid?", a: "HNO₂", o: ["HNO₃", "HNO₂", "H₂NO₂", "HNO"], ex: "Nitrous acid (HNO₂) is less stable than Nitric acid (HNO₃) and contains the nitrite radical (NO₂⁻)." },
+            { q: "Balance the equation: __NH₃ + __O₂ → __NO + __H₂O", a: "4, 5, 4, 6", o: ["2, 3, 2, 3", "4, 5, 4, 6", "2, 2, 2, 3", "4, 3, 4, 6"], ex: "This is the first step in the Ostwald process for making nitric acid. The balanced coefficients are 4, 5, 4, 6." },
+        );
+
+        // --- MATH (add 45 more) ---
+        quizQuestions.math.push(
+            { q: "How many moles of H₂O are produced when 2 moles of C₂H₆ are completely burned? (2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O)", a: "6 moles", o: ["2 moles", "4 moles", "6 moles", "7 moles"], ex: "The balanced equation shows that for every 2 moles of C₂H₆ burned, 6 moles of H₂O are produced. The ratio is 2:6, which simplifies to 1:3." },
+            { q: "A compound has the formula X₃(PO₄)₂. What is the valency of element X?", a: "2", o: ["1", "2", "3", "4"], ex: "The phosphate radical (PO₄) has a charge of 3-. Two phosphate radicals give a total charge of 2 * -3 = -6. To balance this, three X atoms must have a total charge of +6. Therefore, each X atom has a valency of +6 / 3 = 2." },
+            { q: "What is the total number of atoms in 2 formula units of Magnesium Hydroxide, Mg(OH)₂?", a: "10", o: ["5", "6", "8", "10"], ex: "One formula unit of Mg(OH)₂ has 1 (Mg) + 2*(1 O + 1 H) = 1 + 2*2 = 5 atoms. Two formula units would have 2 * 5 = 10 atoms." },
+            { q: "Balance the equation and find the sum of the coefficients on the product side: __P₄ + __O₂ → __P₄O₁₀", a: "1", o: ["1", "5", "6", "15"], ex: "The balanced equation is P₄ + 5O₂ → P₄O₁₀. There is only one product, P₄O₁₀, and its coefficient is 1." },
+            { q: "If Metal M has a valency of 3, what is the formula of its oxide?", a: "M₂O₃", o: ["MO", "M₂O", "M₃O₂", "M₂O₃"], ex: "M has a valency of 3+ and Oxide (O) has a valency of 2-. Criss-crossing the valencies gives M₂O₃." },
+            { q: "How many hydrogen atoms are in 3 molecules of sulphuric acid, H₂SO₄?", a: "6", o: ["2", "3", "6", "12"], ex: "One molecule of H₂SO₄ has 2 hydrogen atoms. Three molecules will have 3 * 2 = 6 hydrogen atoms." },
+            { q: "An element Z forms a sulphate ZSO₄. What is the formula of its phosphate?", a: "Z₃(PO₄)₂", o: ["ZPO₄", "Z₂(PO₄)₃", "Z₃(PO₄)₂", "Z(PO₄)"], ex: "From ZSO₄, since sulphate (SO₄) is 2-, the valency of Z must be 2+. Phosphate (PO₄) is 3-. Criss-crossing Z²⁺ and PO₄³⁻ gives Z₃(PO₄)₂." },
+            { q: "Balance the equation and find the coefficient for oxygen: __FeS₂ + __O₂ → __Fe₂O₃ + __SO₂", a: "11", o: ["4", "8", "11", "16"], ex: "The balanced equation is 4FeS₂ + 11O₂ → 2Fe₂O₃ + 8SO₂." },
+            { q: "Calculate the number of oxygen atoms in 4 formula units of Calcium Nitrate, Ca(NO₃)₂.", a: "24", o: ["6", "12", "18", "24"], ex: "One formula unit has 2 nitrate groups, each with 3 oxygen atoms, so 2 * 3 = 6 oxygen atoms. Four formula units have 4 * 6 = 24 oxygen atoms." },
+            { q: "A compound's formula is A₂B. If the valency of B is 2, what is the valency of A?", a: "1", o: ["1", "2", "3", "4"], ex: "One atom of B has a valency of 2 (let's say 2-). To balance this, two atoms of A must have a total valency of 2+ (2 * 1+). So the valency of A is 1." },
+            { q: "What is the sum of all coefficients when the following equation is balanced? __NaOH + __H₂SO₄ → __Na₂SO₄ + __H₂O", a: "6", o: ["4", "5", "6", "7"], ex: "The balanced equation is 2NaOH + 1H₂SO₄ → 1Na₂SO₄ + 2H₂O. The sum is 2 + 1 + 1 + 2 = 6." },
+            { q: "How many chlorine atoms are in 5 molecules of carbon tetrachloride, CCl₄?", a: "20", o: ["4", "5", "9", "20"], ex: "One molecule has 4 chlorine atoms. Five molecules will have 5 * 4 = 20 chlorine atoms." },
+            { q: "A metal carbonate has the formula MCO₃. What is the formula of its nitride?", a: "M₃N₂", o: ["MN", "M₂N₃", "M₃N₂", "M(N)₂"], ex: "From MCO₃, since carbonate (CO₃) is 2-, the valency of M is 2+. Nitride (N) is 3-. Criss-crossing M²⁺ and N³⁻ gives M₃N₂." },
+            { q: "In the balanced equation 4NH₃ + 5O₂ → 4NO + 6H₂O, what is the total number of atoms on the reactant side?", a: "26", o: ["9", "16", "22", "26"], ex: "Reactants: 4*NH₃ gives 4 N + 12 H = 16 atoms. 5*O₂ gives 10 O atoms. Total = 16 + 10 = 26 atoms." },
+            { q: "If element X has valency 'a' and element Y has valency 'b', what is the general formula for the compound they form?", a: "XₐYₐ", o: ["XY", "XₐYₐ", "XₐYₐ", "X₂Y₂"], ex: "The criss-cross method dictates that the valency of one element becomes the subscript of the other, resulting in the formula XₐYₐ." }
+        );
+
+
+        // --- INITIALIZE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupSymbols();
+            setupValency();
+            setupFormulaCreator();
+            updateFormulaButton();
+            setupEquationBalancer();
+        });
+
+        // --- SECTION 1: SYMBOLS ---
+        function setupSymbols() {
+            const container = document.querySelector('#symbols .grid');
+            elementsData.forEach(el => {
+                const cardHTML = `
+                    <div class="perspective-container h-32">
+                        <div class="flipper-card w-full h-full relative">
+                            <div class="card-front absolute w-full h-full flex flex-col items-center justify-center bg-white border-2 border-blue-200 rounded-lg p-2 text-center">
+                                <p class="font-bold text-lg">${el.name}</p>
+                                ${el.latin ? `<p class="text-xs text-gray-500">(${el.latin})</p>` : ''}
+                            </div>
+                            <div class="card-back absolute w-full h-full flex items-center justify-center bg-blue-500 rounded-lg text-white text-5xl font-bold orbitron">
+                                ${el.symbol}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+
+            document.querySelectorAll('.flipper-card').forEach(card => {
+                card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+            });
+
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .perspective-container { perspective: 1000px; }
+                .flipper-card { transform-style: preserve-3d; transition: transform 0.6s; }
+                .flipper-card.is-flipped { transform: rotateY(180deg); }
+                .card-front, .card-back { backface-visibility: hidden; }
+                .card-back { transform: rotateY(180deg); }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // --- SECTION 2: VALENCY ---
+        function setupValency() {
+            const mgAtom = document.getElementById('mg-atom');
+            const oAtom = document.getElementById('o-atom');
+            for (let i = 0; i < 2; i++) {
+                const electron = document.createElement('div');
+                electron.className = 'electron';
+                electron.style.animationDelay = `-${i * 2.5}s`;
+                mgAtom.appendChild(electron);
+            }
+            for (let i = 0; i < 6; i++) {
+                const electron = document.createElement('div');
+                electron.className = 'electron';
+                electron.style.animationDuration = '8s';
+                electron.style.animationDelay = `-${i * 1.33}s`;
+                oAtom.appendChild(electron);
+            }
+        }
+        
+        // --- SECTION 3: FORMULA CREATOR ---
+        let selectedCation = null;
+        let selectedAnion = null;
+
+        function setupFormulaCreator() {
+            const posContainer = document.getElementById('positive-radicals');
+            const negContainer = document.getElementById('negative-radicals');
+            
+            radicalsData.positive.forEach(r => posContainer.innerHTML += createRadicalCard(r, 'cation'));
+            radicalsData.negative.forEach(r => negContainer.innerHTML += createRadicalCard(r, 'anion'));
+
+            function createRadicalCard(radical, type) {
+                const chargeText = `${radical.charge}${type === 'cation' ? '+' : '-'}`;
+                return `
+                    <div class="radical-card p-2 bg-white rounded shadow border flex justify-between items-center" draggable="true" data-type="${type}" data-symbol="${radical.symbol}" data-charge="${radical.charge}" data-name="${radical.name}">
+                        <span>${radical.name}</span>
+                        <span class="font-mono font-bold">${radical.symbol}<sup>${chargeText}</sup></span>
+                    </div>
+                `;
+            }
+            
+            const radicalCards = document.querySelectorAll('.radical-card');
+            radicalCards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify(card.dataset));
+                    setTimeout(() => card.classList.add('opacity-50'), 0);
+                });
+                card.addEventListener('dragend', () => card.classList.remove('opacity-50'));
+            });
+
+            const dropZones = document.querySelectorAll('.drop-zone');
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    if (zone.id === 'cation-drop-zone' && data.type === 'cation') {
+                        selectedCation = data;
+                        zone.innerHTML = `<strong>${data.name}</strong> (${data.symbol}<sup>${data.charge}+</sup>)`;
+                    } else if (zone.id === 'anion-drop-zone' && data.type === 'anion') {
+                        selectedAnion = data;
+                        zone.innerHTML = `<strong>${data.name}</strong> (${data.symbol}<sup>${data.charge}-</sup>)`;
+                    }
+                    updateFormulaButton();
+                });
+            });
+
+            document.getElementById('create-formula-btn').addEventListener('click', createFormula);
+        }
+        
+        function updateFormulaButton() {
+            const btn = document.getElementById('create-formula-btn');
+            btn.disabled = !(selectedCation && selectedAnion);
+            btn.classList.toggle('opacity-50', btn.disabled);
+            btn.classList.toggle('cursor-not-allowed', btn.disabled);
+        }
+
+        function createFormula() {
+            if (!selectedCation || !selectedAnion) return;
+            const charge1 = parseInt(selectedCation.charge);
+            const charge2 = parseInt(selectedAnion.charge);
+            const commonDivisor = gcd(charge1, charge2);
+            const sub1 = charge2 / commonDivisor;
+            const sub2 = charge1 / commonDivisor;
+            const symbol1 = selectedCation.symbol;
+            const symbol2 = selectedAnion.symbol;
+            const needsParen1 = sub1 > 1 && symbol1.length > 2;
+            const needsParen2 = sub2 > 1 && symbol2.length > 2;
+            const part1 = needsParen1 ? `(${symbol1})` : symbol1;
+            const part2 = needsParen2 ? `(${symbol2})` : symbol2;
+            const finalFormula = `${part1}${sub1 > 1 ? `<sub>${sub1}</sub>` : ''}${part2}${sub2 > 1 ? `<sub>${sub2}</sub>` : ''}`;
+            document.getElementById('formula-result').innerHTML = finalFormula;
+        }
+
+        function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+        // --- SECTION 4: EQUATION BALANCER ---
+        const equationsToBalance = [
+            { reactants: [{s: 'Fe', c: 1}, {s: 'Cl₂', c: 1}], products: [{s: 'FeCl₃', c: 1}], solution: [2, 3, 2], elements: ['Fe', 'Cl'] },
+            { reactants: [{s: 'N₂', c: 1}, {s: 'H₂', c: 1}], products: [{s: 'NH₃', c: 1}], solution: [1, 3, 2], elements: ['N', 'H'] },
+            { reactants: [{s: 'C₃H₈', c: 1}, {s: 'O₂', c: 1}], products: [{s: 'CO₂', c: 1}, {s: 'H₂O', c: 1}], solution: [1, 5, 3, 4], elements: ['C', 'H', 'O'] }
+        ];
+        let currentEquationIndex = 0;
+
+        function setupEquationBalancer() {
+            loadEquation(equationsToBalance[currentEquationIndex]);
+            document.getElementById('check-balance-btn').addEventListener('click', checkBalance);
+        }
+
+        function loadEquation(eq) {
+            const container = document.getElementById('equation-display');
+            container.innerHTML = '';
+            let inputIndex = 0;
+            eq.reactants.forEach((r, i) => {
+                container.innerHTML += `<input type="number" min="1" value="1" class="coefficient" data-index="${inputIndex++}"> <span>${r.s}</span>`;
+                if (i < eq.reactants.length - 1) container.innerHTML += '<span> + </span>';
+            });
+            container.innerHTML += '<span> → </span>';
+            eq.products.forEach((p, i) => {
+                container.innerHTML += `<input type="number" min="1" value="1" class="coefficient" data-index="${inputIndex++}"> <span>${p.s}</span>`;
+                if (i < eq.products.length - 1) container.innerHTML += '<span> + </span>';
+            });
+            document.querySelectorAll('.coefficient').forEach(input => {
+                input.addEventListener('input', () => updateAtomCounts(eq));
+            });
+            updateAtomCounts(eq);
+        }
+
+        function updateAtomCounts(eq) {
+            const inputs = Array.from(document.querySelectorAll('.coefficient')).map(i => parseInt(i.value) || 1);
+            const reactantsCountDiv = document.getElementById('reactants-count');
+            const productsCountDiv = document.getElementById('products-count');
+            reactantsCountDiv.innerHTML = '<h4 class="font-bold">Reactants</h4>';
+            productsCountDiv.innerHTML = '<h4 class="font-bold">Products</h4>';
+            const counts = getAtomCounts(eq, inputs);
+            eq.elements.forEach(el => {
+                const isBalanced = counts.reactants[el] === counts.products[el];
+                const color = isBalanced ? 'text-green-600' : 'text-red-600';
+                reactantsCountDiv.innerHTML += `<p class="${color}">${el}: ${counts.reactants[el] || 0}</p>`;
+                productsCountDiv.innerHTML += `<p class="${color}">${el}: ${counts.products[el] || 0}</p>`;
+            });
+        }
+        
+        function getAtomCounts(eq, coeffs) {
+            const counts = { reactants: {}, products: {} };
+            let coeffIndex = 0;
+            eq.reactants.forEach(r => {
+                const atoms = parseFormula(r.s);
+                for (const [el, num] of Object.entries(atoms)) {
+                    counts.reactants[el] = (counts.reactants[el] || 0) + num * coeffs[coeffIndex];
+                }
+                coeffIndex++;
+            });
+            eq.products.forEach(p => {
+                const atoms = parseFormula(p.s);
+                for (const [el, num] of Object.entries(atoms)) {
+                    counts.products[el] = (counts.products[el] || 0) + num * coeffs[coeffIndex];
+                }
+                coeffIndex++;
+            });
+            return counts;
+        }
+
+        function parseFormula(formula) {
+            const atoms = {};
+            const regex = /([A-Z][a-z]*)(\d*)/g;
+            let match;
+            while ((match = regex.exec(formula)) !== null) {
+                atoms[match[1]] = (atoms[match[1]] || 0) + (parseInt(match[2]) || 1);
+            }
+            return atoms;
+        }
+
+        function checkBalance() {
+            const eq = equationsToBalance[currentEquationIndex];
+            const inputs = Array.from(document.querySelectorAll('.coefficient')).map(i => parseInt(i.value) || 1);
+            const feedback = document.getElementById('balance-feedback');
+            if (JSON.stringify(inputs) === JSON.stringify(eq.solution)) {
+                feedback.textContent = 'Correctly Balanced! Well done!';
+                feedback.className = 'mt-4 font-semibold h-6 text-green-600';
+                setTimeout(() => {
+                    currentEquationIndex = (currentEquationIndex + 1) % equationsToBalance.length;
+                    loadEquation(equationsToBalance[currentEquationIndex]);
+                    feedback.textContent = '';
+                }, 2000);
+            } else {
+                feedback.textContent = 'Not quite balanced. Keep trying!';
+                feedback.className = 'mt-4 font-semibold h-6 text-red-600';
+            }
+        }
+
+        // --- SECTION 5: QUIZ ---
+        let currentQuiz = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let answeredQuestions = [];
+
+        function startQuiz(level) {
+            document.getElementById('quiz-setup').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-level').textContent = `Level: ${level.charAt(0).toUpperCase() + level.slice(1)}`;
+            const questionPool = [...quizQuestions[level]];
+            currentQuiz = questionPool.sort(() => 0.5 - Math.random()).slice(0, 25);
+            currentQuestionIndex = 0;
+            score = 0;
+            answeredQuestions = [];
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            selectedAnswer = null;
+            const questionData = currentQuiz[currentQuestionIndex];
+            document.getElementById('question-counter').textContent = `Question ${currentQuestionIndex + 1} / ${currentQuiz.length}`;
+            document.getElementById('quiz-question').innerHTML = questionData.q;
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            const shuffledOptions = [...questionData.o].sort(() => 0.5 - Math.random());
+            shuffledOptions.forEach(option => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'quiz-option';
+                optionEl.innerHTML = option;
+                optionEl.addEventListener('click', () => selectOption(optionEl, option));
+                optionsContainer.appendChild(optionEl);
+            });
+            document.getElementById('submit-answer-btn').textContent = 'Submit';
+            document.getElementById('submit-answer-btn').onclick = submitAnswer;
+            document.getElementById('explanation').classList.add('hidden');
+        }
+
+        function selectOption(el, answer) {
+            document.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedAnswer = answer;
+        }
+
+        function submitAnswer() {
+            if (selectedAnswer === null) return;
+            const questionData = currentQuiz[currentQuestionIndex];
+            const isCorrect = selectedAnswer === questionData.a;
+            if (isCorrect) score++;
+            answeredQuestions.push({ question: questionData, selected: selectedAnswer, isCorrect: isCorrect });
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.style.pointerEvents = 'none';
+                if (opt.innerHTML === questionData.a) opt.classList.add('correct');
+                else if (opt.innerHTML === selectedAnswer) opt.classList.add('incorrect');
+            });
+            const explanationEl = document.getElementById('explanation');
+            explanationEl.innerHTML = `<strong>Explanation:</strong> ${questionData.ex}`;
+            explanationEl.classList.remove('hidden');
+            document.getElementById('submit-answer-btn').textContent = 'Next Question';
+            document.getElementById('submit-answer-btn').onclick = nextQuestion;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuiz.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('quiz-results').classList.remove('hidden');
+            const percentage = Math.round((score / currentQuiz.length) * 100);
+            document.getElementById('score').textContent = `${score} / ${currentQuiz.length} (${percentage}%)`;
+            const reviewContainer = document.getElementById('review');
+            reviewContainer.innerHTML = '<h4 class="text-xl font-bold mb-2">Review Your Answers:</h4>';
+            answeredQuestions.forEach((ans, index) => {
+                const resultClass = ans.isCorrect ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500';
+                reviewContainer.innerHTML += `
+                    <div class="p-4 rounded border ${resultClass}">
+                        <p class="font-semibold">${index + 1}. ${ans.question.q}</p>
+                        <p>Your answer: <span class="${ans.isCorrect ? 'text-green-700' : 'text-red-700'}">${ans.selected}</span></p>
+                        <p>Correct answer: <span class="text-green-700">${ans.question.a}</span></p>
+                    </div>
+                `;
+            });
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-results').classList.add('hidden');
+            document.getElementById('quiz-setup').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
